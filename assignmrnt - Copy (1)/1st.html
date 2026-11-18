@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Course Registration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eafff8;
+            padding: 20px;
+        }
+        .pg {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(10, 2, 2, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #000000;
+            text-shadow: 0  1px rgb(0, 0, 0);
+        }
+        .form {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        .crsCk {
+            margin-bottom: 10px;
+        }
+        .error {
+            color: red;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #015614;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="pg">
+    <h2>Course Registration System</h2>
+    
+    <form id="regForm">
+        
+
+        <div class="form">
+            <label for="stName">Student Name:</label>
+            <input type="text" id="stName" required>
+        </div>
+
+        
+        <div class="form">
+            <label for="studentID">Student ID:</label>
+            <input type="text" id="studentID" onblur="validateID()">
+            <span id="idError" class="error"></span>
+        </div>
+
+        
+        <div class="form">
+            <br>
+            <label>Select Courses:</label>
+            <div class="checkbox-group">
+                
+                <input type="checkbox" class="crsCk" value="3" onchange="calculateFee()"> Java (3 Credits)<br> <br>
+                <input type="checkbox" class="crsCk" value="3" onchange="calculateFee()"> Database (3 Credits)<br><br>
+                <input type="checkbox" class="crsCk" value="4" onchange="calculateFee()"> AI (4 Credits)<br><br>
+                <input type="checkbox" class="crsCk" value="3" onchange="calculateFee()"> Networking (3 Credits)<br><br>
+                <input type="checkbox" class="crsCk" value="3" onchange="calculateFee()"> Web Engineering (3 Credits)
+            </div>
+        </div>
+
+        <button type="button" onclick="generateSummary()">Register & Show Summary</button>
+    </form>
+
+    
+    <div id="summaryBox" class="summary">
+        <h3>Registration Summary</h3>
+        <p id="sumName"></p>
+        <p id="sumID"></p>
+        <p id="sumCredits"></p>
+        <p id="sumTuition"></p>
+        <p id="sumDiscount"></p>
+        <p id="sumFinal"></p>
+    </div>
+</div>
+
+<script>
+   
+    const PER_CREDIT_FEE = 1000;
+
+    // Task 5: Student ID Validation
+    function validateID() {
+        const idInput = document.getElementById("studentID").value;
+        const errorSpan = document.getElementById("idError");
+
+        if (idInput.trim() === "") {
+            errorSpan.textContent = "Student ID cannot be empty!";
+            return false;
+        } else if (!/^\d+$/.test(idInput.trim())) {
+            errorSpan.textContent = "Student ID must contain numbers only!";
+            return false;
+        } else {
+            errorSpan.textContent = "";
+            return true;
+        }
+    }
+
+    // Calculate Credits, Tuition Fee, Discount, and Final Payment
+    function getCalculationData() {
+        const checkboxes = document.querySelectorAll(".crsCk:checked");
+        let totalCredits = 0;
+
+        checkboxes.forEach(cb => {
+            totalCredits += parseInt(cb.value);
+        });
+
+        const tuitionFee = totalCredits * PER_CREDIT_FEE;
+        let discount = 0;
+
+        // 10% discount if credits exceed 12
+        if (totalCredits > 12) {
+            discount = tuitionFee * 0.10;
+        }
+
+        const finalPayment = tuitionFee - discount;
+
+        return {
+            totalCredits,
+            tuitionFee,
+            discount,
+            finalPayment
+        };
+    }
+
+    // Generate Registration Summary
+    function generateSummary() {
+        const name = document.getElementById("stName").value.trim();
+        const studentID = document.getElementById("studentID").value.trim();
+        const isIdValid = validateID();
+
+        if (name === "" || !isIdValid) {
+            alert("Please fill in all fields correctly!");
+            return;
+        }
+
+        const data = getCalculationData();
+
+        if (data.totalCredits === 0) {
+            alert("Please select at least one course!");
+            return;
+        }
+
+        document.getElementById("sumName").textContent =
+            "Name: " + name;
+
+        document.getElementById("sumID").textContent =
+            "Student ID: " + studentID;
+
+        document.getElementById("sumCredits").textContent =
+            "Total Credits: " + data.totalCredits;
+
+        document.getElementById("sumTuition").textContent =
+            "Tuition Fee: " + data.tuitionFee + " Tk";
+
+        document.getElementById("sumDiscount").textContent =
+            "Discount: " + data.discount + " Tk";
+
+        document.getElementById("sumFinal").textContent =
+            "Final Payment: " + data.finalPayment + " Tk";
+
+        document.getElementById("summaryBox").style.display = "block";
+    }
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Result Processing System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eafff8;
+            padding: 20px;
+        }
+        .pg {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(10, 2, 2, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #000000;
+            text-shadow: 0 1px rgb(0, 0, 0);
+        }
+        .form {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        button:hover {
+            background-color: #015614;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .pg {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            form, .printBtn {
+                display: none;
+            }
+            .summary {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="pg">
+    <h2>Student Result Processing System</h2>
+
+    <form id="resultForm">
+
+        <div class="form">
+            <label for="studentName">Student Name:</label>
+            <input type="text" id="studentName" required>
+        </div>
+
+        <div class="form">
+            <label for="studentID">Student ID:</label>
+            <input type="text" id="studentID" required>
+        </div>
+
+        <div class="form">
+            <label for="java">Java Marks:</label>
+            <input type="number" id="java" min="0" max="100" required>
+        </div>
+
+        <div class="form">
+            <label for="database">Database Marks:</label>
+            <input type="number" id="database" min="0" max="100" required>
+        </div>
+
+        <div class="form">
+            <label for="networking">Networking Marks:</label>
+            <input type="number" id="networking" min="0" max="100" required>
+        </div>
+
+        <div class="form">
+            <label for="ai">AI Marks:</label>
+            <input type="number" id="ai" min="0" max="100" required>
+        </div>
+
+        <div class="form">
+            <label for="web">Web Engineering Marks:</label>
+            <input type="number" id="web" min="0" max="100" required>
+        </div>
+
+        <button type="button" onclick="generateResult()">Calculate Result</button>
+    </form>
+
+    <div id="summaryBox" class="summary">
+        <h3>Student Marksheet</h3>
+        <p id="sumName"></p>
+        <p id="sumID"></p>
+        <p id="sumTotal"></p>
+        <p id="sumPercentage"></p>
+        <p id="sumGrade"></p>
+        <p id="sumGPA"></p>
+        <p id="sumCGPA"></p>
+    </div>
+
+    <button type="button" class="printBtn" onclick="window.print()">
+        Print Marksheet
+    </button>
+</div>
+
+<script>
+
+    // Task 1: Calculate Total Marks
+    function getCalculationData() {
+        const java = Number(document.getElementById("java").value);
+        const database = Number(document.getElementById("database").value);
+        const networking = Number(document.getElementById("networking").value);
+        const ai = Number(document.getElementById("ai").value);
+        const web = Number(document.getElementById("web").value);
+
+        const total = java + database + networking + ai + web;
+        const percentage = total / 5;
+
+        // Task 2: Determine Grade
+        let grade = "";
+        let gpa = 0;
+
+        if (percentage >= 80) {
+            grade = "A+";
+            gpa = 4.00;
+        } else if (percentage >= 75) {
+            grade = "A";
+            gpa = 3.75;
+        } else if (percentage >= 70) {
+            grade = "A-";
+            gpa = 3.50;
+        } else if (percentage >= 65) {
+            grade = "B+";
+            gpa = 3.25;
+        } else if (percentage >= 60) {
+            grade = "B";
+            gpa = 3.00;
+        } else if (percentage >= 50) {
+            grade = "C";
+            gpa = 2.00;
+        } else {
+            grade = "F";
+            gpa = 0.00;
+        }
+
+        // Task 3 and 4: Calculate GPA and CGPA
+        const cgpa = gpa;
+
+        return {
+            total,
+            percentage,
+            grade,
+            gpa,
+            cgpa
+        };
+    }
+
+    // Task 5: Display Result
+    function generateResult() {
+        const studentName = document.getElementById("studentName").value.trim();
+        const studentID = document.getElementById("studentID").value.trim();
+
+        const markInputs = ["java", "database", "networking", "ai", "web"];
+        let valid = true;
+
+        markInputs.forEach(id => {
+            const input = document.getElementById(id);
+            const mark = input.value;
+
+            if (mark.trim() === "" || Number(mark) < 0 || Number(mark) > 100) {
+                valid = false;
+            }
+        });
+
+        if (studentName === "" || studentID === "" || !valid) {
+            alert("Please fill in all fields correctly! Marks must be between 0 and 100.");
+            return;
+        }
+
+        const data = getCalculationData();
+
+        document.getElementById("sumName").textContent =
+            "Student Name: " + studentName;
+
+        document.getElementById("sumID").textContent =
+            "Student ID: " + studentID;
+
+        document.getElementById("sumTotal").textContent =
+            "Total Marks: " + data.total + " / 500";
+
+        document.getElementById("sumPercentage").textContent =
+            "Percentage: " + data.percentage.toFixed(2) + "%";
+
+        document.getElementById("sumGrade").textContent =
+            "Grade: " + data.grade;
+
+        document.getElementById("sumGPA").textContent =
+            "GPA: " + data.gpa.toFixed(2);
+
+        document.getElementById("sumCGPA").textContent =
+            "CGPA: " + data.cgpa.toFixed(2);
+
+        document.getElementById("summaryBox").style.display = "block";
+    }
+
+</script>
+
+</body>
+</html>
+

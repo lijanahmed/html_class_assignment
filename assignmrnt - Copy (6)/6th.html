@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banking Transaction Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eafff8;
+            padding: 20px;
+        }
+        .pg {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(10, 2, 2, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #000000;
+            text-shadow: 0 1px rgb(0, 0, 0);
+        }
+        .form {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+        button:hover {
+            background-color: #015614;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+        }
+        .history {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f1f8f5;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="pg">
+    <h2>Banking Transaction Dashboard</h2>
+
+    <div class="summary">
+        <h3>Current Balance</h3>
+        <p id="balance">Balance: 0 Tk</p>
+    </div>
+
+    <div class="form">
+        <label for="amount">Enter Amount (Tk):</label>
+        <input type="number" id="amount" min="1" onkeyup="validateAmount()">
+    </div>
+
+    <button type="button" onclick="deposit()">Deposit</button>
+    <button type="button" onclick="withdraw()">Withdraw</button>
+    <button type="button" onclick="balanceInquiry()">Balance Inquiry</button>
+
+    <div class="history">
+        <h3>Transaction History</h3>
+        <div id="historyList"></div>
+    </div>
+</div>
+
+<script>
+
+    // Maintain Account Balance
+    let balance = 0;
+
+    // Store Transaction History
+    let history = JSON.parse(localStorage.getItem("transactionHistory")) || [];
+
+    // Task 1: Validate Amount
+    function validateAmount() {
+        const amount = parseFloat(document.getElementById("amount").value);
+
+        if (document.getElementById("amount").value.trim() === "" ||
+            isNaN(amount) || amount <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // Task 2: Deposit Money
+    function deposit() {
+        if (!validateAmount()) {
+            alert("Please enter a valid amount!");
+            return;
+        }
+
+        const amount = parseFloat(document.getElementById("amount").value);
+
+        balance += amount;
+
+        addTransaction("Deposit", amount);
+        updateBalance();
+
+        document.getElementById("amount").value = "";
+    }
+
+    // Task 3: Withdraw Money
+    function withdraw() {
+        if (!validateAmount()) {
+            alert("Please enter a valid amount!");
+            return;
+        }
+
+        const amount = parseFloat(document.getElementById("amount").value);
+
+        if (amount > balance) {
+            alert("Insufficient balance!");
+            return;
+        }
+
+        balance -= amount;
+
+        addTransaction("Withdraw", amount);
+        updateBalance();
+
+        document.getElementById("amount").value = "";
+    }
+
+    // Task 4: Balance Inquiry
+    function balanceInquiry() {
+        alert("Current Balance: " + balance.toFixed(2) + " Tk");
+    }
+
+    // Task 5: Add Transaction History
+    function addTransaction(type, amount) {
+        const transaction = {
+            type: type,
+            amount: amount,
+            date: new Date().toLocaleString()
+        };
+
+        history.push(transaction);
+
+        // Bonus: Store History Using localStorage
+        localStorage.setItem("transactionHistory", JSON.stringify(history));
+
+        displayHistory();
+    }
+
+    // Update Current Balance
+    function updateBalance() {
+        document.getElementById("balance").textContent =
+            "Balance: " + balance.toFixed(2) + " Tk";
+    }
+
+    // Display Transaction History
+    function displayHistory() {
+        const historyList = document.getElementById("historyList");
+        historyList.innerHTML = "";
+
+        history.forEach((item, index) => {
+            const p = document.createElement("p");
+
+            p.textContent = (index + 1) + ". " + item.type +
+                " - " + item.amount.toFixed(2) + " Tk - " + item.date;
+
+            historyList.appendChild(p);
+        });
+    }
+
+    // Display Saved History When Page Loads
+    displayHistory();
+
+</script>
+
+</body>
+</html>

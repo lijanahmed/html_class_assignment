@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Electricity Billing System</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #eafff8; padding: 20px; }
+        .pg { max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 0 10px rgba(10, 2, 2, 0.1); }
+        h2 { text-align: center; color: #000000; text-shadow: 0 1px rgb(0, 0, 0); }
+        .form { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 10px; }
+        .error { color: red; font-size: 15px; }
+        .warn { color: #d9534f; font-weight: bold; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 20px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #015614; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; font-size: 14px; }
+        .summary { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="pg">
+    <h2>Smart Electricity Billing</h2>
+
+    <form id="billForm">
+        <div class="form">
+            <label for="custName">Customer Name:</label>
+            <input type="text" id="custName">
+        </div>
+
+        <div class="form">
+            <label for="units">Units Consumed (kWh):</label>
+            <input type="number" id="units" min="0" onkeyup="checkUsage()">
+            <span id="unitMsg" class="error"></span>
+        </div>
+
+        <div class="form">
+            <input type="checkbox" id="showSlab" checked onchange="toggleSlab()"> Show slab-wise details
+        </div>
+
+        <button type="button" onclick="generateBill()">Generate Bill</button>
+    </form>
+
+    <div id="summaryBox" class="summary">
+        <h3>Electricity Bill</h3>
+        <p id="sumName"></p>
+        <div id="slabBox"></div>
+        <p id="sumEnergy"></p>
+        <p id="sumVat"></p>
+        <p id="sumService"></p>
+        <p id="sumTotal"></p>
+        <p id="sumWarn" class="warn"></p>
+    </div>
+</div>
+
+<script>
+    const VAT_RATE = 0.15;
+    const SERVICE_CHARGE = 100;
+
+    // Slab table: each slab has a start, an end and a rate per unit
+    const slabs = [
+        { from: 0,   to: 100,      rate: 5,  label: "1 - 100" },
+        { from: 100, to: 200,      rate: 7,  label: "101 - 200" },
+        { from: 200, to: 300,      rate: 9,  label: "201 - 300" },
+        { from: 300, to: Infinity, rate: 12, label: "Above 300" }
+    ];
+
+    // Task 5: Warning if usage exceeds 300 units (keyup)
+    function checkUsage() {
+        const u = parseFloat(document.getElementById("units").value);
+        const msg = document.getElementById("unitMsg");
+        if (u > 300) {
+            msg.textContent = "Warning: usage exceeds 300 units!";
+        } else {
+            msg.textContent = "";
+        }
+    }
+
+    // Task 1: Slab-wise calculation
+    function calculateBill(units) {
+        let energy = 0;
+        const rows = [];
+
+        slabs.forEach(s => {
+            const used = Math.max(0, Math.min(units, s.to) - s.from);
+            const cost = used * s.rate;
+            energy += cost;
+            rows.push({ label: s.label, used: used, rate: s.rate, cost: cost });
+        });
+
+        // Task 2: VAT, Task 3: Service Charge
+        const vat = energy * VAT_RATE;
+        const total = energy + vat + SERVICE_CHARGE;
+
+        return { rows, energy, vat, total };
+    }
+
+    // Show or hide slab details (change)
+    function toggleSlab() {
+        const show = document.getElementById("showSlab").checked;
+        document.getElementById("slabBox").style.display = show ? "block" : "none";
+    }
+
+    // Task 4: Generate full bill dynamically
+    function generateBill() {
+        const name = document.getElementById("custName").value.trim();
+        const units = parseFloat(document.getElementById("units").value);
+
+        if (name === "" || isNaN(units) || units < 0) {
+            alert("Please enter a valid name and units!");
+            return;
+        }
+
+        const data = calculateBill(units);
+
+        let html = "<table><tr><th>Slab</th><th>Units</th><th>Rate</th><th>Cost</th></tr>";
+        data.rows.forEach(r => {
+            html += "<tr><td>" + r.label + "</td><td>" + r.used + "</td><td>" + r.rate +
+                    " Tk</td><td>" + r.cost + " Tk</td></tr>";
+        });
+        html += "</table>";
+
+        document.getElementById("sumName").textContent = "Customer: " + name + " (" + units + " units)";
+        document.getElementById("slabBox").innerHTML = html;
+        document.getElementById("sumEnergy").textContent = "Energy Cost: " + data.energy.toFixed(2) + " Tk";
+        document.getElementById("sumVat").textContent = "VAT (15%): " + data.vat.toFixed(2) + " Tk";
+        document.getElementById("sumService").textContent = "Service Charge: " + SERVICE_CHARGE + " Tk";
+        document.getElementById("sumTotal").textContent = "Total Bill: " + data.total.toFixed(2) + " Tk";
+        document.getElementById("sumWarn").textContent =
+            units > 300 ? "Warning: usage exceeds 300 units!" : "";
+
+        toggleSlab();
+        document.getElementById("summaryBox").style.display = "block";
+    }
+</script>
+
+</body>
+</html>

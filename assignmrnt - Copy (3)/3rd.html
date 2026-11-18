@@ -1,0 +1,199 @@
+<!-- ```html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management Billing System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #eafff8;
+            padding: 20px;
+        }
+        .pg {
+            max-width: 500px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(10, 2, 2, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #000000;
+            text-shadow: 0 1px rgb(0, 0, 0);
+        }
+        .form {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #015614;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="pg">
+    <h2>Hospital Management Billing System</h2>
+
+    <form id="billForm">
+
+        <div class="form">
+            <label for="patientName">Patient Name:</label>
+            <input type="text" id="patientName" required>
+        </div>
+
+        <div class="form">
+            <label for="cabinType">Cabin Type:</label>
+            <select id="cabinType">
+                <option value="1000">General (1000 Tk/day)</option>
+                <option value="2000">Semi Deluxe (2000 Tk/day)</option>
+                <option value="3500">Deluxe (3500 Tk/day)</option>
+            </select>
+        </div>
+
+        <div class="form">
+            <label for="days">Number of Days:</label>
+            <input type="number" id="days" min="1" required>
+        </div>
+
+        <div class="form">
+            <label for="medicineCost">Medicine Cost (Tk):</label>
+            <input type="number" id="medicineCost" min="0" required>
+        </div>
+
+        <div class="form">
+            <label for="testCost">Test Cost (Tk):</label>
+            <input type="number" id="testCost" min="0" required>
+        </div>
+
+        <button type="button" onclick="generateBill()">Generate Bill</button>
+    </form>
+
+    <div id="summaryBox" class="summary">
+        <h3>Hospital Bill Receipt</h3>
+        <p id="sumName"></p>
+        <p id="sumCabin"></p>
+        <p id="sumDays"></p>
+        <p id="sumCabinCharge"></p>
+        <p id="sumMedicine"></p>
+        <p id="sumTest"></p>
+        <p id="sumVAT"></p>
+        <p id="sumTotal"></p>
+    </div>
+</div>
+
+<script>
+
+    const VAT_RATE = 0.10;
+
+    // Task 1: Calculate Cabin Charge
+    function getCalculationData() {
+        const patientName = document.getElementById("patientName").value.trim();
+        const cabinType = document.getElementById("cabinType");
+        const cabinRate = parseInt(cabinType.value);
+        const days = parseInt(document.getElementById("days").value);
+        const medicineCost = parseFloat(document.getElementById("medicineCost").value);
+        const testCost = parseFloat(document.getElementById("testCost").value);
+
+        const cabinCharge = cabinRate * days;
+
+        // Task 2 and 3: Medicine Cost and Test Cost
+        const subTotal = cabinCharge + medicineCost + testCost;
+
+        // Task 4: Calculate VAT
+        const vat = subTotal * VAT_RATE;
+
+        // Task 5: Calculate Grand Total
+        const grandTotal = subTotal + vat;
+
+        return {
+            patientName,
+            cabinType: cabinType.options[cabinType.selectedIndex].text,
+            days,
+            cabinCharge,
+            medicineCost,
+            testCost,
+            vat,
+            grandTotal
+        };
+    }
+
+    // Generate Bill Receipt Dynamically
+    function generateBill() {
+        const patientName = document.getElementById("patientName").value.trim();
+        const days = document.getElementById("days").value;
+        const medicineCost = document.getElementById("medicineCost").value;
+        const testCost = document.getElementById("testCost").value;
+
+        if (patientName === "" || days === "" || medicineCost === "" || testCost === "" ||
+            Number(days) <= 0 || Number(medicineCost) < 0 || Number(testCost) < 0) {
+            alert("Please fill in all fields correctly!");
+            return;
+        }
+
+        const data = getCalculationData();
+
+        document.getElementById("sumName").textContent =
+            "Patient Name: " + data.patientName;
+
+        document.getElementById("sumCabin").textContent =
+            "Cabin Type: " + data.cabinType;
+
+        document.getElementById("sumDays").textContent =
+            "Number of Days: " + data.days;
+
+        document.getElementById("sumCabinCharge").textContent =
+            "Cabin Charge: " + data.cabinCharge.toFixed(2) + " Tk";
+
+        document.getElementById("sumMedicine").textContent =
+            "Medicine Cost: " + data.medicineCost.toFixed(2) + " Tk";
+
+        document.getElementById("sumTest").textContent =
+            "Test Cost: " + data.testCost.toFixed(2) + " Tk";
+
+        document.getElementById("sumVAT").textContent =
+            "VAT (10%): " + data.vat.toFixed(2) + " Tk";
+
+        document.getElementById("sumTotal").textContent =
+            "Grand Total: " + data.grandTotal.toFixed(2) + " Tk";
+
+        document.getElementById("summaryBox").style.display = "block";
+    }
+
+</script>
+
+</body>
+</html>

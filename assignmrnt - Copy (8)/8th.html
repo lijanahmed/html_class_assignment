@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Ticket Reservation System</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #eafff8; padding: 20px; }
+        .pg { max-width: 500px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 0 10px rgba(10, 2, 2, 0.1); }
+        h2 { text-align: center; color: #000000; text-shadow: 0 1px rgb(0, 0, 0); }
+        .form { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 10px; }
+        .error { color: red; font-size: 15px; }
+        .seats { text-align: center; font-weight: bold; background: #e9ecef; padding: 8px; border-radius: 10px; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 20px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #015614; }
+        .summary { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 4px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="pg">
+    <h2>Bus Ticket Reservation</h2>
+
+    <div class="seats" id="seatBox">Available Seats: 40</div>
+    <br>
+
+    <form id="busForm">
+        <div class="form">
+            <label for="pName">Passenger Name:</label>
+            <input type="text" id="pName" onblur="validateName()">
+            <span id="nameError" class="error"></span>
+        </div>
+
+        <div class="form">
+            <label for="dest">Destination:</label>
+            <select id="dest" onchange="showFare()">
+                <option value="Dhaka|500">Dhaka - 500 Tk</option>
+                <option value="Chittagong|800">Chittagong - 800 Tk</option>
+                <option value="Sylhet|700">Sylhet - 700 Tk</option>
+                <option value="Rajshahi|600">Rajshahi - 600 Tk</option>
+            </select>
+        </div>
+
+        <div class="form">
+            <label for="seatNo">Number of Seats:</label>
+            <input type="number" id="seatNo" min="1" value="1" onkeyup="showFare()" onchange="showFare()">
+            <span id="seatError" class="error"></span>
+        </div>
+
+        <div class="form">
+            <label for="ptype">Passenger Type:</label>
+            <select id="ptype" onchange="showFare()">
+                <option value="0">Regular (no discount)</option>
+                <option value="0.50">Child (50% off)</option>
+                <option value="0.15">Student (15% off)</option>
+                <option value="0.20">Senior Citizen (20% off)</option>
+            </select>
+        </div>
+
+        <p id="fareTxt"><b>Fare: 500 Tk</b></p>
+
+        <button type="button" onclick="generateTicket()">Book Ticket</button>
+    </form>
+
+    <div id="summaryBox" class="summary">
+        <h3>Bus Ticket</h3>
+        <p id="sumTicket"></p>
+        <p id="sumName"></p>
+        <p id="sumDest"></p>
+        <p id="sumSeats"></p>
+        <p id="sumType"></p>
+        <p id="sumBase"></p>
+        <p id="sumDisc"></p>
+        <p id="sumFare"></p>
+        <p id="sumLeft"></p>
+    </div>
+</div>
+
+<script>
+    const TOTAL_SEATS = 40;
+    let availableSeats = TOTAL_SEATS;
+    let ticketCounter = 1000;
+
+    function validateName() {
+        const n = document.getElementById("pName").value.trim();
+        const err = document.getElementById("nameError");
+        if (n === "") {
+            err.textContent = "Passenger name cannot be empty!";
+            return false;
+        }
+        err.textContent = "";
+        return true;
+    }
+
+    // Task 1 and 2: fare and discount
+    function getFareData() {
+        const parts = document.getElementById("dest").value.split("|");
+        const dest = parts[0];
+        const fare = parseInt(parts[1]);
+        const seats = parseInt(document.getElementById("seatNo").value) || 0;
+        const sel = document.getElementById("ptype");
+        const rate = parseFloat(sel.value);
+        const typeName = sel.options[sel.selectedIndex].text.split(" (")[0];
+
+        const base = fare * seats;
+        const discount = base * rate;
+        const finalFare = base - discount;
+
+        return { dest, fare, seats, typeName, base, discount, finalFare };
+    }
+
+    function showFare() {
+        const d = getFareData();
+        const err = document.getElementById("seatError");
+
+        if (d.seats < 1) {
+            err.textContent = "Enter at least 1 seat!";
+        } else if (d.seats > availableSeats) {
+            err.textContent = "Only " + availableSeats + " seats available!";
+        } else {
+            err.textContent = "";
+        }
+        document.getElementById("fareTxt").innerHTML = "<b>Fare: " + d.finalFare.toFixed(2) + " Tk</b>";
+    }
+
+    // Task 3: generate ticket, Task 4: update seat count
+    function generateTicket() {
+        const d = getFareData();
+
+        if (!validateName() || d.seats < 1) {
+            alert("Please enter a valid name and number of seats!");
+            return;
+        }
+        if (d.seats > availableSeats) {
+            alert("Not enough seats available!");
+            return;
+        }
+
+        availableSeats -= d.seats;
+        ticketCounter++;
+
+        document.getElementById("sumTicket").textContent = "Ticket No: BUS-" + ticketCounter;
+        document.getElementById("sumName").textContent = "Passenger: " + document.getElementById("pName").value.trim();
+        document.getElementById("sumDest").textContent = "Destination: " + d.dest;
+        document.getElementById("sumSeats").textContent = "Seats: " + d.seats;
+        document.getElementById("sumType").textContent = "Passenger Type: " + d.typeName;
+        document.getElementById("sumBase").textContent = "Base Fare: " + d.base.toFixed(2) + " Tk";
+        document.getElementById("sumDisc").textContent = "Discount: " + d.discount.toFixed(2) + " Tk";
+        document.getElementById("sumFare").textContent = "Total Fare: " + d.finalFare.toFixed(2) + " Tk";
+        document.getElementById("sumLeft").textContent = "Seats Remaining: " + availableSeats;
+        document.getElementById("seatBox").textContent = "Available Seats: " + availableSeats;
+        document.getElementById("summaryBox").style.display = "block";
+        showFare();
+    }
+</script>
+
+</body>
+</html>
